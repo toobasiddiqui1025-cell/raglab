@@ -45,8 +45,12 @@ class HealthResponse(BaseModel):
 
 
 app = FastAPI(
-    title="RAGLab API",
-    description="Question-answering API over machine learning research papers",
+    title="Inquira API",
+    description=(
+        "Inquira: Your AI Research Companion. Ask. Explore. Understand. "
+        "REST API for grounded question-answering over ML research papers "
+        "with scientific evaluation."
+    ),
     version="0.1.0",
 )
 

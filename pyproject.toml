@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "raglab"
 version = "0.1.0"
-description = "A Retrieval-Augmented Generation system over ML research papers with a rigorous evaluation framework."
+description = "Inquira: Your AI Research Companion — A Retrieval-Augmented Generation system over ML research papers with a rigorous evaluation framework."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
@@ -29,6 +29,7 @@ dependencies = [
     "pandas",
     "plotly",
     "tqdm",
+    "tiktoken",
 ]
 
 [project.optional-dependencies]

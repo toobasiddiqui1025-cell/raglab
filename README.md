@@ -1,25 +1,47 @@
-# RAGLab 🔬
+# Inquira 🔍
 
-A modular, highly-evaluable Retrieval-Augmented Generation (RAG) system over machine learning research papers with rigorous offline benchmarking.
+### *Ask. Explore. Understand.*
+
+> **Your AI Research Companion.**
+>
+> Inquira is an AI-powered research assistant built using Retrieval-Augmented Generation (RAG), with a scientific evaluation framework to measure and improve answer quality.
+
+---
+
+## 🎨 Brand Identity & Design System
+
+Inquira is built around a modern, scientific visual identity designed for clarity, depth, and precision:
+
+| Color Token | Hex Code | Visual Preview | Role |
+| :--- | :--- | :--- | :--- |
+| **Midnight Navy** | `#101D35` | `■ #101D35` | Primary Canvas & Deep Surface Contrast |
+| **Teal** | `#65D6D0` | `■ #65D6D0` | Primary Accent / Interactive Highlights & Evidence |
+| **Violet** | `#8B7CF6` | `■ #8B7CF6` | Secondary Accent / AI Synthesis & Citations |
+| **Cloud White** | `#F4F6FA` | `■ #F4F6FA` | Light Neutral / Surface Layer & Readable Content |
+
+- **Tagline**: *Ask. Explore. Understand.*
+- **Mission**: Empower researchers and ML practitioners to interrogate academic literature with mathematically grounded citations, zero tolerance for hallucinations, and empirically benchmarked retrieval quality.
+
+---
 
 ## Architecture
 
 ```mermaid
 graph TD
-    User([User Query]) --> API[FastAPI / Streamlit]
-    API --> Retriever[Hybrid Retriever]
+    User([Researcher Query]) --> UI[Inquira UI: Streamlit / FastAPI]
+    UI --> Retriever[Hybrid Retriever]
     Retriever --> Dense[Dense Vector Search: ChromaDB]
     Retriever --> Sparse[Sparse Lexical Search: BM25]
-    Dense --> Fusion[Reciprocal Rank Fusion]
+    Dense --> Fusion[Reciprocal Rank Fusion - RRF]
     Sparse --> Fusion
     Fusion --> Reranker[Cross-Encoder Reranker]
-    Reranker --> Prompt[Prompt Assembly & Citation Enforcer]
-    Prompt --> LLM[LLM: Gemini Client]
+    Reranker --> Prompt[Grounded Prompt Assembly & Citation Enforcer]
+    Prompt --> LLM[LLM Engine: Gemini Client]
     LLM --> Answer([Cited Answer [doc_id, p.N]])
 
     subgraph Evaluation Harness
-        Gold[eval/gold_questions.json] --> Runner[Evaluation Runner]
-        Runner --> PageMetrics[Recall@k, MRR, nDCG@k]
+        Gold[eval/gold_questions.json] --> Runner[Benchmark Runner]
+        Runner --> PageMetrics[Page-Level Recall@k, MRR, nDCG@k]
         Runner --> Judge[LLM-as-a-Judge: Correctness & Faithfulness]
         Runner --> Results[eval/results/]
     end
@@ -51,6 +73,9 @@ pip install -e .
 # Configure environment variables
 cp .env.example .env
 # Edit .env and set your GEMINI_API_KEY
+
+# Run Inquira Streamlit App
+streamlit run app/streamlit_app.py
 ```
 
 ## Project Structure
@@ -82,9 +107,9 @@ raglab/
 │   │   ├── runner.py          # Automated benchmark runner
 │   │   └── report.py          # Markdown tables and Plotly visualizations
 │   └── api/
-│       └── main.py            # FastAPI REST service (/ask, /health)
+│       └── main.py            # Inquira FastAPI REST service (/ask, /health)
 ├── app/
-│   └── streamlit_app.py       # Interactive Q&A & evaluation dashboard
+│   └── streamlit_app.py       # Inquira Streamlit Research & Evaluation App
 ├── configs/                   # Experiment configurations (YAML)
 ├── data/papers/               # ArXiv PDF corpus
 ├── eval/

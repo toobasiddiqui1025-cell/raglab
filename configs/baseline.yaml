@@ -8,6 +8,7 @@ ingestion:
   chunker: "fixed"
   chunk_size_tokens: 500
   chunk_overlap_tokens: 50
+  tokenizer_encoding: "cl100k_base"
 
 indexing:
   embedder_model: "sentence-transformers/all-MiniLM-L6-v2"
