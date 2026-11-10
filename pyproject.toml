@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raglab"
+version = "0.1.0"
+description = "A Retrieval-Augmented Generation system over ML research papers with a rigorous evaluation framework."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "RAGLab Student" }
+]
+dependencies = [
+    "pymupdf",
+    "sentence-transformers",
+    "chromadb",
+    "rank_bm25",
+    "google-genai",
+    "pydantic",
+    "pydantic-settings",
+    "python-dotenv",
+    "pyyaml",
+    "fastapi",
+    "uvicorn",
+    "streamlit",
+    "pytest",
+    "ruff",
+    "pandas",
+    "plotly",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

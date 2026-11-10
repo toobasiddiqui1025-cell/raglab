@@ -1,0 +1,10 @@
+[
+  {
+    "id": "q001",
+    "type": "factoid",
+    "question": "What optimizer and learning rate schedule was used in Attention Is All You Need?",
+    "reference_answer": "The Adam optimizer was used with beta1 = 0.9, beta2 = 0.98, and epsilon = 10^-9, with learning rate varied over training according to a warmup schedule of 4000 warmup steps.",
+    "gold_doc_id": "1706.03762",
+    "gold_pages": [7]
+  }
+]

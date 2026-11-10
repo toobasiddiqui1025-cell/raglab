@@ -1,0 +1,25 @@
+# Baseline RAG Pipeline Experiment Configuration
+
+pipeline:
+  name: "baseline_dense"
+  description: "Standard dense retrieval with sentence-transformers and Gemini generation"
+
+ingestion:
+  chunker: "fixed"
+  chunk_size_tokens: 500
+  chunk_overlap_tokens: 50
+
+indexing:
+  embedder_model: "sentence-transformers/all-MiniLM-L6-v2"
+  vector_store:
+    collection_name: "papers_baseline"
+    persist_directory: "data/chroma"
+
+retrieval:
+  strategy: "dense"
+  top_k: 5
+
+generation:
+  model_name: "gemini-2.5-flash"
+  temperature: 0.0
+  max_output_tokens: 1024
