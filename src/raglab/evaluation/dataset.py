@@ -1,4 +1,4 @@
-"""Gold evaluation dataset schema and loader for Inquira.
+"""Gold evaluation dataset schema and loader for RAGLab.
 
 Defines two Pydantic models for the evaluation benchmark:
 
@@ -28,7 +28,15 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Literal, Optional
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    StrictBool,
+    StrictInt,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +64,10 @@ class GoldEvidence(BaseModel):
                containing the evidence for this question.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     doc_id: str
-    pages: List[int]
+    pages: List[StrictInt]
 
     @field_validator("doc_id")
     @classmethod
@@ -128,11 +138,13 @@ class GoldQuestion(BaseModel):
             No two entries may reference the same doc_id.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     type: QuestionType
     question: str
     reference_answer: str
-    is_answerable: bool
+    is_answerable: StrictBool
     gold_evidence: List[GoldEvidence]
 
     # ------------------------------------------------------------------
@@ -247,6 +259,16 @@ class DatasetValidationError(Exception):
     """
 
 
+def _format_validation_error(exc: ValidationError) -> List[str]:
+    """Flatten a Pydantic ValidationError into 'field.path: message' lines."""
+    lines: List[str] = []
+    for err in exc.errors():
+        loc = ".".join(str(part) for part in err["loc"]) or "<question>"
+        msg = err["msg"].removeprefix("Value error, ")
+        lines.append(f"{loc}: {msg}")
+    return lines
+
+
 def build_corpus_registry(papers_dir: Path) -> CorpusRegistry:
     """Build a doc_id -> page_count registry by scanning a PDF directory.
 
@@ -329,8 +351,13 @@ def load_gold_dataset(
     if not dataset_path.is_file():
         raise FileNotFoundError(f"Gold dataset file not found: {dataset_path}")
 
-    with open(dataset_path, "r", encoding="utf-8") as f:
-        raw = json.load(f)
+    try:
+        with open(dataset_path, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            f"Gold dataset '{dataset_path}' is not valid JSON: {exc}"
+        ) from exc
 
     if not isinstance(raw, list):
         raise ValueError(
@@ -342,21 +369,24 @@ def load_gold_dataset(
     # ------------------------------------------------------------------
     questions: List[GoldQuestion] = []
     parse_errors: List[str] = []
+    failed_questions = 0
 
     for idx, item in enumerate(raw):
         try:
             questions.append(GoldQuestion.model_validate(item))
-        except Exception as exc:
+        except ValidationError as exc:
             q_id = (
-                item.get("id", f"<index {idx}>")
+                str(item.get("id", f"<index {idx}>"))
                 if isinstance(item, dict)
                 else f"<index {idx}>"
             )
-            parse_errors.append(f"  [{q_id}] {exc}")
+            failed_questions += 1
+            for line in _format_validation_error(exc):
+                parse_errors.append(f"  [{q_id}] {line}")
 
     if parse_errors:
         raise DatasetValidationError(
-            f"Failed to parse {len(parse_errors)} question(s):\n"
+            f"Failed to parse {failed_questions} question(s):\n"
             + "\n".join(parse_errors)
         )
 

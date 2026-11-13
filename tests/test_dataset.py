@@ -317,6 +317,44 @@ class TestLoadGoldDatasetLevel:
         assert "bad_doc" in msg
         assert "999" in msg
 
+    def test_malformed_json_raises_value_error(self, tmp_path: Path) -> None:
+        p = tmp_path / "gold.json"
+        p.write_text("[{not json", encoding="utf-8")
+        with pytest.raises(ValueError, match="not valid JSON"):
+            load_gold_dataset(p)
+
+    def test_missing_field_names_question_and_field(self, tmp_path: Path) -> None:
+        bad = _make_question(id="q042")
+        del bad["reference_answer"]
+        with pytest.raises(DatasetValidationError) as exc_info:
+            load_gold_dataset(_write_json(tmp_path, [bad]))
+        msg = str(exc_info.value)
+        assert "[q042]" in msg and "reference_answer" in msg
+
+    def test_invalid_type_names_question_and_field(self, tmp_path: Path) -> None:
+        bad = _make_question(id="q007", type="essay")
+        with pytest.raises(DatasetValidationError) as exc_info:
+            load_gold_dataset(_write_json(tmp_path, [bad]))
+        msg = str(exc_info.value)
+        assert "[q007]" in msg and "type" in msg
+
+    def test_unknown_field_rejected(self, tmp_path: Path) -> None:
+        bad = _make_question(id="q009")
+        bad["gold_evidnce"] = []
+        with pytest.raises(DatasetValidationError, match="gold_evidnce"):
+            load_gold_dataset(_write_json(tmp_path, [bad]))
+
+    def test_non_object_item_rejected(self, tmp_path: Path) -> None:
+        with pytest.raises(DatasetValidationError, match="index 0"):
+            load_gold_dataset(_write_json(tmp_path, ["just a string"]))
+
+    def test_malformed_pages_type_names_field(self, tmp_path: Path) -> None:
+        bad = _make_question(id="q010", gold_evidence=[{"doc_id": "x", "pages": "7"}])
+        with pytest.raises(DatasetValidationError) as exc_info:
+            load_gold_dataset(_write_json(tmp_path, [bad]))
+        msg = str(exc_info.value)
+        assert "[q010]" in msg and "gold_evidence.0.pages" in msg
+
     def test_load_actual_gold_questions_file(self) -> None:
         """The committed eval/gold_questions.json must parse cleanly."""
         path = Path("eval/gold_questions.json")
